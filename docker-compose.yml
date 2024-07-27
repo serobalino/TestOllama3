@@ -1,0 +1,30 @@
+services:
+  ollama:
+    image: ollama/ollama
+    # ports:
+    #   - "11434:11434"
+    volumes:
+      - ./ollama/data:/root/.ollama
+
+  initialize:
+    image: curlimages/curl:latest
+    depends_on:
+      - ollama
+    entrypoint: ["/bin/sh", "/initialize_ollama.sh"]
+    volumes:
+      - ./ollama/entrypoint.sh:/initialize_ollama.sh
+
+  web-ui:
+    image: ghcr.io/open-webui/open-webui:main
+    depends_on:
+      - initialize
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_AUTH=false
+      - WEBUI_NAME=${NOMBRE_WEB}
+      - DEFAULT_MODELS=${MODELO_DEFAULT}
+    ports:
+      - 80:8080
+    volumes:
+      - ./web-ui:/app/backend/data"
+    restart: unless-stopped
